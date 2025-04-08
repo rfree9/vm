@@ -13,7 +13,7 @@ fn main() {
     let vm_result = vm.run();
 
     match vm_result {
-        Ok(()) => process::exit(0),
+        Ok(exit_code) => process::exit(exit_code),
         Err(error) => {
             eprintln!("{}", error);
             process::exit(1);

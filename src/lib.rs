@@ -44,7 +44,7 @@ impl VirtualMachine {
     }
 
     /* Parse and execute instructions from the stack. */
-    pub fn run(&mut self) -> Result<(), &str> {
+    pub fn run(&mut self) -> Result<i32, &str> {
 
         /* TODO: This is obviously very rudimentary, it just parses instructions until it hits an
          * exit instruction. I just wanted to put something down for the sake of having some
@@ -82,7 +82,7 @@ impl VirtualMachine {
             }
         }
 
-        Ok(())
+        Ok(0)
     }
 
     /* Grab the next 4 bytes from the stack and pack it into one int. */
