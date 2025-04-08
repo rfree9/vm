@@ -1,0 +1,37 @@
+ + = + todo + = +
+    
+     Miscellaneous Instructions (opcode=0)
+ [ ]     Exit Instruction
+ [ ]     Swap Instruction
+ [ ]     No Operation Instruction
+ [ ]     Input Instruction
+ [ ]     String Input Instruction
+ [ ]     Debug Instruction
+     Pop Instructions (opcode=1)
+ [ ]     Pop Instruction
+     Binary Arithmetic Instructions (opcode=2)
+ [ ]     Binary Arithmetic Instructions
+     Unary Arithmetic Instructions (opcode=3)
+ [ ]     Unary Arithmetic Instructions
+     String Print Instructions (opcode=4)
+ [ ]     String Print Instruction
+     Call Instructions (opcode=5)
+ [ ]     Call Instruction
+     Return Instructions (opcode=6)
+ [ ]     Return Instruction
+     Unconditional Goto Instructions (opcode=7)
+ [ ]     Goto Instruction
+     Binary If Instructions (opcode=8)
+ [ ]     Binary If Instructions
+     Unary If Instructions (opcode=9)
+ [ ]     Unary If Instructions
+     Dup Instructions (opcode=12)
+ [ ]     Dup Instruction
+     Print Instructions (opcode=13)
+ [ ]     Print Instruction
+     Dump Instructions (opcode=14)
+ [ ]     Dump Instruction
+     Push Instructions (opcode=15)
+ [ ]     Push Instruction
+ [ ]     String Push Instruction
+
