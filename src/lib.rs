@@ -72,7 +72,12 @@ impl VirtualMachine {
                 12 => println!("Dup instruction"),
                 13 => println!("Print instruction"),
                 14 => println!("Dump instruction"),
-                15 => println!("Push instruction"),
+                15 => {
+                    println!("Push instruction");
+                    /* TODO: Write a method to handle errors in instructions. */
+                    _ = self.push(instruction);
+                    println!("DEBUG: {}", self.stack_pointer);
+                },
                 _ => return Err("Bad instruction."),
             }
 
@@ -113,5 +118,27 @@ impl VirtualMachine {
     /* Pull out an instruction's opcode. */
     fn get_op_code(instruction: u32) -> u32 {
         instruction >> 28
+    }
+
+    /* INSTRUCTIONS */ 
+   
+    fn push(&mut self, instruction: u32) -> Result<(), &str> {
+        let push_value = (instruction & 0x0fffffff) as i32;
+        let bytes = push_value.to_be_bytes();
+
+        self.stack_pointer -= 4;
+        if self.stack_pointer < 0 {
+            return Err("Out of memory.");
+        }
+
+        let start = self.stack_pointer as usize;
+        let end = start + 4;
+
+        /* TODO: I can't confirm if this works until I write something to dump the stack. */
+        for i in start..end {
+            self.stack[i] = bytes[i - start];
+        }
+
+        Ok(())
     }
 }
