@@ -32,6 +32,6 @@
      Dump Instructions (opcode=14)
  [ ]     Dump Instruction
      Push Instructions (opcode=15)
- [ ]     Push Instruction
+ [x]     Push Instruction
  [ ]     String Push Instruction
 
