@@ -147,7 +147,7 @@ impl VirtualMachine {
         let mut push_value = (instruction & 0x0fffffff) as i32;
         if push_value & (1 << 27) != 0 {
             /* Sign extend. */
-            push_value |= (0xf << 28);
+            push_value |= 0xf << 28;
         }
         
         let bytes = push_value.to_be_bytes();
