@@ -83,6 +83,7 @@ impl VirtualMachine {
 
             self.increment_program_counter();
             if instruction == 0 {
+                self.print_stack();
                 break;
             }
         }
@@ -118,6 +119,27 @@ impl VirtualMachine {
     /* Pull out an instruction's opcode. */
     fn get_op_code(instruction: u32) -> u32 {
         instruction >> 28
+    }
+
+    /* Print out the current state of the stack. */
+    fn print_stack(&self) {
+        let mut i = 0;
+
+        //print!(" {:04x} ", i);
+        for byte in &self.stack {
+            if i % 16 == 0 {
+                if i != 0 { 
+                    print!("\n");
+                }
+                print!(" {:04x} | ", i);
+            }
+            
+            print!("  {:02x}", byte);
+
+            i += 1;
+        }
+
+        print!("\n");
     }
 
     /* INSTRUCTIONS */ 
