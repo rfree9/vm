@@ -74,7 +74,7 @@ impl VirtualMachine {
                 14 => println!("Dump instruction"),
                 15 => {
                     println!("Push instruction");
-                    /* TODO: Write a method to handle errors in instructions. */
+                    /* TODO: Figure out a way to propogate error messages back to main. */ 
                     _ = self.push(instruction);
                 },
                 _ => return Err("Bad instruction."),
