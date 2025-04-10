@@ -162,6 +162,12 @@ impl VirtualMachine {
         let start = self.stack_pointer as usize;
         let end = start + 4;
 
+        if end > self.stack.len() {
+            panic!("VirtualMachine::push() failed: end out of range");
+        }
+
+        /* Put 'em on there. */
+        
         for i in start..end {
             self.stack[i] = bytes[i - start];
         }
