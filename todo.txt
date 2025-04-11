@@ -8,7 +8,7 @@
  [ ]     String Input Instruction
  [ ]     Debug Instruction
      Pop Instructions (opcode=1)
- [ ]     Pop Instruction
+ [x]     Pop Instruction
      Binary Arithmetic Instructions (opcode=2)
  [ ]     Binary Arithmetic Instructions
      Unary Arithmetic Instructions (opcode=3)
