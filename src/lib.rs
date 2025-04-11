@@ -51,7 +51,7 @@ impl VirtualMachine {
             
             self.increment_program_counter();
             if instruction == 0 {
-                self.print_stack();
+                //self.print_stack();
                 break;
             }
         }
@@ -117,7 +117,10 @@ impl VirtualMachine {
         print!("opcode: {:x} -- ", VirtualMachine::get_op_code(instruction));
         match opcode {
             0 => println!("Misc. instruction"),
-            1 => println!("Pop instruction"),
+            1 => {
+                println!("Pop instruction");
+                self.pop(instruction)?;
+            },
             2 => println!("Binary arithmetic instruction"),
             3 => println!("Unary arithmetic instruction"),
             4 => println!("String print instruction"),
@@ -139,7 +142,8 @@ impl VirtualMachine {
         Ok(())
     }
 
-    /* INSTRUCTIONS */ 
+    /* INSTRUCTIONS */
+    /* TODO: These'll get their own file at some point. */
    
     fn push(&mut self, instruction: u32) -> Result<(), String> {
         let mut push_value = (instruction & 0x0fffffff) as i32;
@@ -170,6 +174,32 @@ impl VirtualMachine {
             self.stack[i] = bytes[i - start];
         }
 
+        Ok(())
+    }
+
+    fn pop(&mut self, instruction: u32) -> Result<(), String> {
+        let offset = instruction & 0x0fffffff;
+        let new_stack_pointer = self.stack_pointer + offset as i32;
+
+        println!("DEBUG: sp: {} o:{} nsp:{}", self.stack_pointer, offset, new_stack_pointer);
+
+        /* If the stack pointer is already at the bottom of the memory allocated, this instruction
+         * has no effect. If the offset is not given, it is by default 4. If the offset places the
+         * stack pointer past the end of the memory space, the stack pointer will be reset to the
+         * end of the memory space (e.g., length(memory)). */
+
+        /* Stack pointer is at the bottom of the stack. */
+        if self.stack_pointer == 4096 {
+            return Ok(());
+        } 
+
+        /* New SP goes beyond the stack. */
+        if new_stack_pointer > 4096 {
+            self.stack_pointer = 4096;
+            return Ok(());
+        }
+
+        self.stack_pointer = new_stack_pointer;
         Ok(())
     }
 }
