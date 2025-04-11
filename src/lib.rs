@@ -8,9 +8,9 @@ pub struct VirtualMachine {
 
 impl VirtualMachine {
     /* Constructor. */
-    pub fn build(args: &[String]) -> Result<VirtualMachine, &str> {
+    pub fn build(args: &[String]) -> Result<VirtualMachine, String> {
         if args.len() != 2 {
-            return Err("usage: vm <file.v>");
+            return Err(String::from("usage: vm <file.v>"));
         }
 
         /* Verifying the file is valid. */
@@ -18,15 +18,15 @@ impl VirtualMachine {
         let file_result = fs::read(&args[1]);
         let mut file_buf = match file_result {
             Ok(file_buf) => file_buf,
-            Err(_) => return Err("Couldn't open file."),
+            Err(_) => return Err(String::from("Couldn't open file.")),
         };
 
         if file_buf.len() > (4096 + 4) {
-            return Err("File too big.");
+            return Err(String::from("File too big."));
         }
 
         if file_buf.len() < 4 || file_buf[0..4] != vec![0xde, 0xad, 0xbe, 0xef] {
-            return Err("File format is invalid.");
+            return Err(String::from("File format is invalid."));
         }
 
         /* Creating the stack. */
@@ -44,7 +44,7 @@ impl VirtualMachine {
     }
 
     /* Parse and execute instructions from the stack. */
-    pub fn run(&mut self) -> Result<i32, &str> {
+    pub fn run(&mut self) -> Result<i32, String> {
 
         /* TODO: This is obviously very rudimentary, it just parses instructions until it hits an
          * exit instruction. I just wanted to put something down for the sake of having some
@@ -77,7 +77,7 @@ impl VirtualMachine {
                     /* TODO: Figure out a way to propogate error messages back to main. */ 
                     _ = self.push(instruction);
                 },
-                _ => return Err("Bad instruction."),
+                _ => return Err(String::from("Bad instruction.")),
             }
 
             self.increment_program_counter();
@@ -143,7 +143,7 @@ impl VirtualMachine {
 
     /* INSTRUCTIONS */ 
    
-    fn push(&mut self, instruction: u32) -> Result<(), &str> {
+    fn push(&mut self, instruction: u32) -> Result<(), String> {
         let mut push_value = (instruction & 0x0fffffff) as i32;
         if push_value & (1 << 27) != 0 {
             /* Sign extend. */
@@ -154,7 +154,7 @@ impl VirtualMachine {
 
         self.stack_pointer -= 4;
         if self.stack_pointer < 0 {
-            return Err("Out of memory.");
+            return Err(String::from("Out of memory."));
         }
 
         println!("DEBUG: {}", push_value);
