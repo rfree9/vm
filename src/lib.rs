@@ -51,7 +51,8 @@ impl VirtualMachine {
             
             self.increment_program_counter();
             if instruction == 0 {
-                //self.print_stack();
+                self.print_stack();
+                self.print_vm_info();
                 break;
             }
         }
@@ -108,6 +109,12 @@ impl VirtualMachine {
         }
 
         print!("\n");
+    }
+
+    /* Print the SP and PC. */
+    fn print_vm_info(&self) {
+        println!(" - stack pointer:   {}", self.stack_pointer);
+        println!(" - program counter: {}", self.program_counter);
     }
 
     /* Executes an instruction. */
@@ -182,6 +189,11 @@ impl VirtualMachine {
         let new_stack_pointer = self.stack_pointer + offset as i32;
 
         println!("DEBUG: sp: {} o:{} nsp:{}", self.stack_pointer, offset, new_stack_pointer);
+
+        if offset % 4 != 0 {
+            /* This shouldn't happen, but just in case. */
+            return Err(String::from("pop: Offset should be a multiple of four."));
+        }
 
         /* If the stack pointer is already at the bottom of the memory allocated, this instruction
          * has no effect. If the offset is not given, it is by default 4. If the offset places the
