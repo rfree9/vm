@@ -74,8 +74,7 @@ impl VirtualMachine {
                 14 => println!("Dump instruction"),
                 15 => {
                     println!("Push instruction");
-                    /* TODO: Figure out a way to propogate error messages back to main. */ 
-                    _ = self.push(instruction);
+                    self.push(instruction)?;
                 },
                 _ => return Err(String::from("Bad instruction.")),
             }
