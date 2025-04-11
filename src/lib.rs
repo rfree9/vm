@@ -45,40 +45,10 @@ impl VirtualMachine {
 
     /* Parse and execute instructions from the stack. */
     pub fn run(&mut self) -> Result<i32, String> {
-
-        /* TODO: This is obviously very rudimentary, it just parses instructions until it hits an
-         * exit instruction. I just wanted to put something down for the sake of having some
-         * organization.
-         * - Functions should be made to handle each op code.
-         * - The Ok() side of the Result should be the exit code, that way main() can use it.
-         * - We should probably move all of this shit to a lib.rs file sooner than later. */
-
         loop {
             let instruction = self.get_next_instruction();
-            let opcode = VirtualMachine::get_op_code(instruction);
-
-            print!("opcode: {:x} -- ", VirtualMachine::get_op_code(instruction));
-            match opcode {
-                0 => println!("Misc. instruction"),
-                1 => println!("Pop instruction"),
-                2 => println!("Binary arithmetic instruction"),
-                3 => println!("Unary arithmetic instruction"),
-                4 => println!("String print instruction"),
-                5 => println!("Call instruction"),
-                6 => println!("Return instruction"),
-                7 => println!("Unconditional goto instruction"),
-                8 => println!("Binary if instruction"),
-                9 => println!("Unary if instruction"),
-                12 => println!("Dup instruction"),
-                13 => println!("Print instruction"),
-                14 => println!("Dump instruction"),
-                15 => {
-                    println!("Push instruction");
-                    self.push(instruction)?;
-                },
-                _ => return Err(String::from("Bad instruction.")),
-            }
-
+            self.execute_instruction(instruction)?;
+            
             self.increment_program_counter();
             if instruction == 0 {
                 self.print_stack();
@@ -138,6 +108,35 @@ impl VirtualMachine {
         }
 
         print!("\n");
+    }
+
+    /* Executes an instruction. */
+    fn execute_instruction(&mut self, instruction: u32) -> Result<(), String> {
+        let opcode = VirtualMachine::get_op_code(instruction);
+        
+        print!("opcode: {:x} -- ", VirtualMachine::get_op_code(instruction));
+        match opcode {
+            0 => println!("Misc. instruction"),
+            1 => println!("Pop instruction"),
+            2 => println!("Binary arithmetic instruction"),
+            3 => println!("Unary arithmetic instruction"),
+            4 => println!("String print instruction"),
+            5 => println!("Call instruction"),
+            6 => println!("Return instruction"),
+            7 => println!("Unconditional goto instruction"),
+            8 => println!("Binary if instruction"),
+            9 => println!("Unary if instruction"),
+            12 => println!("Dup instruction"),
+            13 => println!("Print instruction"),
+            14 => println!("Dump instruction"),
+            15 => {
+                println!("Push instruction");
+                self.push(instruction)?;
+            },
+            _ => return Err(String::from("Bad instruction.")),
+        }
+
+        Ok(())
     }
 
     /* INSTRUCTIONS */ 
