@@ -323,6 +323,7 @@ impl VirtualMachine {
         }
 
         println!("Result: {}", result);
+        self.push_int_onto_stack(result);
 
         Ok(result)
     }
