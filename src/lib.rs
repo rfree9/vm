@@ -53,12 +53,8 @@ impl VirtualMachine {
             let instruction = self.get_next_instruction();
             self.execute_instruction(instruction)?;
             
-            if self.should_exit {
-                break;
-            }
-
             self.increment_program_counter();
-            if instruction == 0 {
+            if self.should_exit {
                 self.print_stack();
                 self.print_vm_info();
                 break;
