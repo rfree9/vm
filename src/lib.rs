@@ -265,7 +265,23 @@ impl VirtualMachine {
         /* Divide by zero check. */
         if (which_operation == 3 || which_operation == 4) && right == 0 {
             return Err(String::from("Attempt to divide by zero."));
-        } 
+        }
+
+        /* TODO: I'm conflicted with how to handle shifting by negative numbers. By default, Rust
+         * doesn't allow it, and it's considered undefined behavior in C (from what I can tell, it
+         * seems that there's no standard among processors either). The common solution in
+         * languages these days is to mod the right operand by the word size. This seems to be the
+         * solution Marz's program takes, but I don't like that solution because there really isn't
+         * any sense in shifting by a negative number anyway; hence why Rust doesn't allow it. I
+         * don't think Marz is going to test freak cases like this, so I'm going to do what I think
+         * is right and just kill the program in this case. If you think I should change my mind on
+         * this matter then I'll change the code to mirror Marz's, but for now I'm standing my
+         * ground. ~row */
+    
+        /* Negative shift check. */
+        if which_operation <= 8 && right < 0 {
+            return Err(String::from("Attempt to shift by a negative number."));
+        }
 
         print!("{:x} - ", which_operation);
 
@@ -311,7 +327,10 @@ impl VirtualMachine {
             },
             9 => {
                 println!("lsr");
-                result = left >> right; /* TODO */
+                let unsigned_left = left as u32;
+                let unsigned_right = right as u32;
+                let lsr = unsigned_left >> unsigned_right;
+                result = lsr as i32; 
             },
             11 => {
                 println!("asr");
@@ -323,7 +342,7 @@ impl VirtualMachine {
         }
 
         println!("Result: {}", result);
-        self.push_int_onto_stack(result);
+        self.push_int_onto_stack(result)?;
 
         Ok(result)
     }
