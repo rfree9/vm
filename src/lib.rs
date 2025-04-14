@@ -152,7 +152,10 @@ impl VirtualMachine {
                 println!("Pop instruction");
                 self.pop(instruction)?;
             },
-            2 => println!("Binary arithmetic instruction"),
+            2 => {
+                println!("Binary arithmetic instruction");
+                self.binary_arithmetic(instruction)?;
+            },
             3 => println!("Unary arithmetic instruction"),
             4 => println!("String print instruction"),
             5 => println!("Call instruction"),
@@ -169,6 +172,63 @@ impl VirtualMachine {
             },
             _ => return Err(String::from("Bad instruction.")),
         }
+
+        Ok(())
+    }
+
+    /* Fetch four bytes from the stack. */ 
+    fn pop_int_from_stack(&mut self) -> Result<u32, String> {
+        let new_stack_pointer = self.stack_pointer + 4;
+
+        if new_stack_pointer > 4096 {
+            return Err(String::from("Failed to pop: stack is empty."));
+        }
+
+        if self.stack_pointer < 0 {
+            panic!("VirtualMachine::pop_int_from_stack() failed: stack_pointer out of range");
+        }
+
+        let start = self.stack_pointer as usize;
+        let end = new_stack_pointer as usize;
+        let mut popped = 0u32;
+
+        for i in start..end {
+            let offset = i - start; 
+            let byte = (self.stack[i] as u32) << ((3 - offset) * 8);
+            popped |= byte;
+
+            //println!("{:x} {:x} {:x}", self.stack[i], offset, popped);
+        }
+
+        self.stack_pointer = new_stack_pointer;
+
+        Ok(popped)
+    }
+
+    fn push_int_onto_stack(&mut self, n: i32) -> Result<(), String> {
+        let new_stack_pointer = self.stack_pointer - 4;
+
+        if new_stack_pointer < 0 { /* TODO: this should be the end of the instruction space. */
+            return Err(String::from("Out of memory."));
+        }
+
+        println!("DEBUG: {}", n);
+
+        let bytes = n.to_be_bytes();
+        let start = new_stack_pointer as usize;
+        let end = start + 4;
+
+        if end > self.stack.len() {
+            panic!("VirtualMachine::push_int_onto_stack() failed: end out of range");
+        }
+
+        /* Put 'em on there. */
+        
+        for i in start..end {
+            self.stack[i] = bytes[i - start];
+        }
+
+        self.stack_pointer = new_stack_pointer;
 
         Ok(())
     }
@@ -191,29 +251,9 @@ impl VirtualMachine {
             /* Sign extend. */
             push_value |= 0xf << 28;
         }
+
+        self.push_int_onto_stack(push_value)?;
         
-        let bytes = push_value.to_be_bytes();
-
-        self.stack_pointer -= 4;
-        if self.stack_pointer < 0 {
-            return Err(String::from("Out of memory."));
-        }
-
-        println!("DEBUG: {}", push_value);
-
-        let start = self.stack_pointer as usize;
-        let end = start + 4;
-
-        if end > self.stack.len() {
-            panic!("VirtualMachine::push() failed: end out of range");
-        }
-
-        /* Put 'em on there. */
-        
-        for i in start..end {
-            self.stack[i] = bytes[i - start];
-        }
-
         Ok(())
     }
 
@@ -246,5 +286,97 @@ impl VirtualMachine {
 
         self.stack_pointer = new_stack_pointer;
         Ok(())
+    }
+
+    fn binary_arithmetic(&mut self, instruction: u32) -> Result<i32, String> {
+        let which_seperated = instruction & (0xf << 24);
+        let which_operation = which_seperated >> 24;
+        let right = self.pop_int_from_stack()? as i32;
+        let left = self.pop_int_from_stack()? as i32;
+        let result: i32;
+
+        /* Divide by zero check. */
+        if (which_operation == 3 || which_operation == 4) && right == 0 {
+            return Err(String::from("Attempt to divide by zero."));
+        }
+
+        /* TODO: I'm conflicted with how to handle shifting by negative numbers. By default, Rust
+         * doesn't allow it, and it's considered undefined behavior in C (from what I can tell, it
+         * seems that there's no standard among processors either). The common solution in
+         * languages these days is to mod the right operand by the word size. This seems to be the
+         * solution Marz's program takes, but I don't like that solution because there really isn't
+         * any sense in shifting by a negative number anyway; hence why Rust doesn't allow it. I
+         * don't think Marz is going to test freak cases like this, so I'm going to do what I think
+         * is right and just kill the program in this case. If you think I should change my mind on
+         * this matter then I'll change the code to mirror Marz's, but for now I'm standing my
+         * ground. ~row */
+    
+        /* Negative shift check. */
+        if which_operation <= 8 && right < 0 {
+            return Err(String::from("Attempt to shift by a negative number."));
+        }
+
+        print!("{:x} - ", which_operation);
+
+        print!("l:{} r:{} - ", left, right);
+
+        /* Perform calculation. */
+        match which_operation {
+            0 => {
+                println!("add");
+                result = left + right;
+            },
+            1 => {
+                println!("sub");
+                result = left - right;
+            },
+            2 => {
+                println!("mul");
+                result = left * right;
+            },
+            3 => {
+                println!("div");
+                result = left / right;
+            },
+            4 => {
+                println!("rem");
+                result = left % right;
+            },
+            5 => {
+                println!("and");
+                result = left & right;
+            }, 
+            6 => {
+                println!("or");
+                result = left | right;
+            },
+            7 => {
+                println!("xor");
+                result = left ^ right;
+            },
+            8 => {
+                println!("lsl");
+                result = left << right;
+            },
+            9 => {
+                println!("lsr");
+                let unsigned_left = left as u32;
+                let unsigned_right = right as u32;
+                let lsr = unsigned_left >> unsigned_right;
+                result = lsr as i32; 
+            },
+            11 => {
+                println!("asr");
+                result = left >> right;
+            }, 
+            _ => {
+                return Err(String::from("Binary arithmetic instruction contained bad identifier."));
+            },
+        }
+
+        println!("Result: {}", result);
+        self.push_int_onto_stack(result)?;
+
+        Ok(result)
     }
 }

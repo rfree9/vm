@@ -10,7 +10,7 @@
      Pop Instructions (opcode=1)
  [x]     Pop Instruction
      Binary Arithmetic Instructions (opcode=2)
- [ ]     Binary Arithmetic Instructions
+ [x]     Binary Arithmetic Instructions
      Unary Arithmetic Instructions (opcode=3)
  [ ]     Unary Arithmetic Instructions
      String Print Instructions (opcode=4)
