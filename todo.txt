@@ -1,7 +1,7 @@
  + = + todo + = +
     
      Miscellaneous Instructions (opcode=0)
- [ ]     Exit Instruction
+ [X]     Exit Instruction
  [ ]     Swap Instruction
  [ ]     No Operation Instruction
  [ ]     Input Instruction
