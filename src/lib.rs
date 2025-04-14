@@ -149,6 +149,33 @@ impl VirtualMachine {
         Ok(())
     }
 
+    /* Fetch four bytes from the stack. */ 
+    fn pop_int_from_stack(&mut self) -> Result<u32, String> {
+        let new_stack_pointer = self.stack_pointer + 4;
+
+        if new_stack_pointer > 4096 {
+            return Err(String::from("Failed to pop: stack is empty."));
+        }
+
+        if self.stack_pointer < 0 {
+            panic!("VirtualMachine::pop_int_from_stack() failed: stack_pointer out of range");
+        }
+
+        let start = self.stack_pointer as usize;
+        let end = new_stack_pointer as usize;
+        let mut popped = 0u32;
+
+        for i in start..end {
+            let offset = i - start; 
+            let byte = (self.stack[i] as i32) << ((3 - offset) * 8);
+            popped |= byte;
+
+            println!("{:x} {:x} {:x}", self.stack[i], offset, popped);
+        }
+
+        Ok(0)
+    }
+
     /* INSTRUCTIONS */
     /* TODO: These'll get their own file at some point. */
    
