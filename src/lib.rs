@@ -181,6 +181,34 @@ impl VirtualMachine {
         Ok(popped)
     }
 
+    fn push_int_onto_stack(&mut self, n: i32) -> Result<(), String> {
+        let new_stack_pointer = self.stack_pointer - 4;
+
+        if new_stack_pointer < 0 { /* TODO: this should be the end of the instruction space. */
+            return Err(String::from("Out of memory."));
+        }
+
+        println!("DEBUG: {}", n);
+
+        let bytes = n.to_be_bytes();
+        let start = new_stack_pointer as usize;
+        let end = start + 4;
+
+        if end > self.stack.len() {
+            panic!("VirtualMachine::push_int_onto_stack() failed: end out of range");
+        }
+
+        /* Put 'em on there. */
+        
+        for i in start..end {
+            self.stack[i] = bytes[i - start];
+        }
+
+        self.stack_pointer = new_stack_pointer;
+
+        Ok(())
+    }
+
     /* INSTRUCTIONS */
     /* TODO: These'll get their own file at some point. */
    
@@ -190,29 +218,9 @@ impl VirtualMachine {
             /* Sign extend. */
             push_value |= 0xf << 28;
         }
+
+        self.push_int_onto_stack(push_value)?;
         
-        let bytes = push_value.to_be_bytes();
-
-        self.stack_pointer -= 4;
-        if self.stack_pointer < 0 {
-            return Err(String::from("Out of memory."));
-        }
-
-        println!("DEBUG: {}", push_value);
-
-        let start = self.stack_pointer as usize;
-        let end = start + 4;
-
-        if end > self.stack.len() {
-            panic!("VirtualMachine::push() failed: end out of range");
-        }
-
-        /* Put 'em on there. */
-        
-        for i in start..end {
-            self.stack[i] = bytes[i - start];
-        }
-
         Ok(())
     }
 
