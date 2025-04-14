@@ -128,7 +128,10 @@ impl VirtualMachine {
                 println!("Pop instruction");
                 self.pop(instruction)?;
             },
-            2 => println!("Binary arithmetic instruction"),
+            2 => {
+                println!("Binary arithmetic instruction");
+                self.binary_arithmetic(instruction)?;
+            },
             3 => println!("Unary arithmetic instruction"),
             4 => println!("String print instruction"),
             5 => println!("Call instruction"),
@@ -167,13 +170,15 @@ impl VirtualMachine {
 
         for i in start..end {
             let offset = i - start; 
-            let byte = (self.stack[i] as i32) << ((3 - offset) * 8);
+            let byte = (self.stack[i] as u32) << ((3 - offset) * 8);
             popped |= byte;
 
-            println!("{:x} {:x} {:x}", self.stack[i], offset, popped);
+            //println!("{:x} {:x} {:x}", self.stack[i], offset, popped);
         }
 
-        Ok(0)
+        self.stack_pointer = new_stack_pointer;
+
+        Ok(popped)
     }
 
     /* INSTRUCTIONS */
@@ -240,5 +245,77 @@ impl VirtualMachine {
 
         self.stack_pointer = new_stack_pointer;
         Ok(())
+    }
+
+    fn binary_arithmetic(&mut self, instruction: u32) -> Result<i32, String> {
+        let which_seperated = instruction & (0xf << 24);
+        let which_operation = which_seperated >> 24;
+        let right = self.pop_int_from_stack()? as i32;
+        let left = self.pop_int_from_stack()? as i32;
+        let result: i32;
+
+        /* Divide by zero check. */
+        if (which_operation == 3 || which_operation == 4) && right == 0 {
+            return Err(String::from("Attempt to divide by zero."));
+        } 
+
+        print!("{:x} - ", which_operation);
+
+        print!("l:{} r:{} - ", left, right);
+
+        /* Perform calculation. */
+        match which_operation {
+            0 => {
+                println!("add");
+                result = left + right;
+            },
+            1 => {
+                println!("sub");
+                result = left - right;
+            },
+            2 => {
+                println!("mul");
+                result = left * right;
+            },
+            3 => {
+                println!("div");
+                result = left / right;
+            },
+            4 => {
+                println!("rem");
+                result = left % right;
+            },
+            5 => {
+                println!("and");
+                result = left & right;
+            }, 
+            6 => {
+                println!("or");
+                result = left | right;
+            },
+            7 => {
+                println!("xor");
+                result = left ^ right;
+            },
+            8 => {
+                println!("lsl");
+                result = left << right;
+            },
+            9 => {
+                println!("lsr");
+                result = left >> right; /* TODO */
+            },
+            11 => {
+                println!("asr");
+                result = left >> right;
+            }, 
+            _ => {
+                return Err(String::from("Binary arithmetic instruction contained bad identifier."));
+            },
+        }
+
+        println!("Result: {}", result);
+
+        Ok(result)
     }
 }
