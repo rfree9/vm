@@ -4,6 +4,8 @@ pub struct VirtualMachine {
     stack: Vec<u8>,
     stack_pointer: i32,
     program_counter: i32,
+    exit_code: i32,
+    should_exit: bool
 }
 
 impl VirtualMachine {
@@ -40,6 +42,8 @@ impl VirtualMachine {
             stack,
             stack_pointer: 4096,
             program_counter: 0,
+            exit_code: 0,
+            should_exit: false
         })
     }
 
@@ -49,6 +53,10 @@ impl VirtualMachine {
             let instruction = self.get_next_instruction();
             self.execute_instruction(instruction)?;
             
+            if self.should_exit {
+                break;
+            }
+
             self.increment_program_counter();
             if instruction == 0 {
                 self.print_stack();
@@ -57,7 +65,7 @@ impl VirtualMachine {
             }
         }
 
-        Ok(0)
+        Ok(self.exit_code)
     }
 
     /* Grab the next 4 bytes from the stack and pack it into one int. */
@@ -123,7 +131,23 @@ impl VirtualMachine {
         
         print!("opcode: {:x} -- ", VirtualMachine::get_op_code(instruction));
         match opcode {
-            0 => println!("Misc. instruction"),
+            0 => {
+                println!("Misc. instruction");
+                let misc_instruction = instruction >> 24;
+
+                match misc_instruction {
+                    0 => {
+                        println!("Exit Instruction");
+                        self.exit(instruction)?
+                    },
+                    0x1 => println!("Swap Instruction"),
+                    0x2 => println!("Nop Instruction"),
+                    0x4 => println!("Input Instruction"),
+                    0x5 => println!("stinput Instruction"),
+                    0xF => println!("Debug Instruction"),
+                    _ => return Err(String::from("Bad instruction.")),
+                }
+            },
             1 => {
                 println!("Pop instruction");
                 self.pop(instruction)?;
@@ -151,6 +175,15 @@ impl VirtualMachine {
 
     /* INSTRUCTIONS */
     /* TODO: These'll get their own file at some point. */
+
+    fn exit(&mut self, instruction: u32) -> Result<(), String>{
+        let code = instruction as i32;
+        self.exit_code = code;
+        self.should_exit = true;
+        println!("DEBUG: exit code: {code}");
+        
+        Ok(())
+    }
    
     fn push(&mut self, instruction: u32) -> Result<(), String> {
         let mut push_value = (instruction & 0x0fffffff) as i32;
