@@ -12,7 +12,7 @@
      Binary Arithmetic Instructions (opcode=2)
  [x]     Binary Arithmetic Instructions
      Unary Arithmetic Instructions (opcode=3)
- [ ]     Unary Arithmetic Instructions
+ [x]     Unary Arithmetic Instructions
      String Print Instructions (opcode=4)
  [ ]     String Print Instruction
      Call Instructions (opcode=5)
