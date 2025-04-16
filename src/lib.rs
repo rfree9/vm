@@ -55,8 +55,7 @@ impl VirtualMachine {
             
             self.increment_program_counter();
             if self.should_exit {
-                self.print_stack();
-                self.print_vm_info();
+                
                 break;
             }
         }
@@ -142,6 +141,8 @@ impl VirtualMachine {
                     0x5 => println!("stinput Instruction"),
                     0xF => {
                         println!("Debug Instruction");
+                        self.print_stack();
+                        self.print_vm_info();
                     }
                     _ => return Err(String::from("Bad instruction.")),
                 }
