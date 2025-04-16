@@ -143,7 +143,10 @@ impl VirtualMachine {
                         println!("Input Instruction");
                         self.input(instruction)?
                     },
-                    0x5 => println!("stinput Instruction"),
+                    0x5 => {
+                        println!("stinput Instruction");
+                        self.stinput(instruction)?;
+                    },
                     0xF => {
                         println!("Debug Instruction");
                         self.print_stack();
@@ -295,6 +298,23 @@ impl VirtualMachine {
         }
 
         self.push_int_onto_stack(n)?;
+
+        Ok(())
+    }
+
+    fn stinput(&mut self, instruction: u32) -> Result<(), String>{
+        let shifted = instruction & 0x00FF_FFFF;
+        println!("{}", shifted);
+
+        let mut input = String::new();
+        let _ = stdin().read_line(&mut input);
+        let mut trimmed = input.trim();
+        
+        if trimmed.len() > shifted as usize {
+            trimmed = &trimmed[..shifted as usize];
+        }
+
+        // TODO: pass trimmed string to stpush
 
         Ok(())
     }
