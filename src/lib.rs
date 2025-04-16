@@ -168,7 +168,10 @@ impl VirtualMachine {
                 self.unary_arithmetic(instruction)?;
             },
             4 => println!("String print instruction"),
-            5 => println!("Call instruction"),
+            5 => {
+                println!("Call instruction");
+                self.call(instruction)?;
+            },
             6 => println!("Return instruction"),
             7 => println!("Unconditional goto instruction"),
             8 => println!("Binary if instruction"),
@@ -479,5 +482,37 @@ impl VirtualMachine {
         self.push_int_onto_stack(result)?;
 
         Ok(())
+    }
+
+    /*call instruction*/
+    fn call(&mut self, instruction: u32) -> Result<(), String> {
+        let og_offset = ((instruction >> 2) & 0x3FFFFFF) as i32;
+        let offset = if (og_offset & (1 << 25)) != 0 {
+            og_offset | !0x3FFFFFF
+        } else {
+            og_offset
+        };
+        
+        //final offset in bytes
+        let final_offset = offset << 2;
+
+        //push ret addy 
+        let red_addy = self.program_counter + 4;
+        self.push_int_onto_stack(red_addy)?;
+
+        //jump to new pc
+        self.program_counter = self.program_counter + final_offset;
+
+        //prev double increment 
+        self.program_counter -= 4;
+
+        println!(
+            "DEBUG: call - return_address={}, new_pc={}, raw_offset={:#x}",
+            red_addy,
+            self.program_counter + 4,
+            offset
+        );
+
+        Ok(())    
     }
 }
