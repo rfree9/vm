@@ -3,8 +3,8 @@
      Miscellaneous Instructions (opcode=0)
  [X]     Exit Instruction
  [ ]     Swap Instruction
- [ ]     No Operation Instruction
- [ ]     Input Instruction
+ [X]     No Operation Instruction
+ [X]     Input Instruction
  [ ]     String Input Instruction
  [ ]     Debug Instruction
      Pop Instructions (opcode=1)
