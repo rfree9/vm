@@ -140,7 +140,9 @@ impl VirtualMachine {
                     0x2 => println!("Nop Instruction"),
                     0x4 => println!("Input Instruction"),
                     0x5 => println!("stinput Instruction"),
-                    0xF => println!("Debug Instruction"),
+                    0xF => {
+                        println!("Debug Instruction");
+                    }
                     _ => return Err(String::from("Bad instruction.")),
                 }
             },
@@ -204,6 +206,7 @@ impl VirtualMachine {
         Ok(popped)
     }
 
+    /* Push a word onto the stack. */
     fn push_int_onto_stack(&mut self, n: i32) -> Result<(), String> {
         let new_stack_pointer = self.stack_pointer - 4;
 
@@ -230,6 +233,31 @@ impl VirtualMachine {
         self.stack_pointer = new_stack_pointer;
 
         Ok(())
+    }
+
+    /* Read an int from the stack. */
+    fn peak_int_from_stack(&self, stack_offset: i32) -> Result<u32, String> {
+        let start = (self.stack_pointer + stack_offset) as usize;
+        let end = start + 4; 
+
+        if end > 4096 {
+            return Err(String::from("Failed to peak: stack is empty"));
+        }
+        if start > 4096 {
+            return Err(String::from("Failed to peak: offset out of range"));
+        }
+
+        let mut peaked = 0u32;
+
+        for i in start..end {
+            let offset = i - start; 
+            let byte = (self.stack[i] as u32) << ((3 - offset) * 8);
+            peaked |= byte;
+        }
+
+        println!("DEBUG: peak says {}", peaked);
+
+        Ok(peaked)
     }
 
     /* INSTRUCTIONS */
