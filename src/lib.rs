@@ -152,7 +152,10 @@ impl VirtualMachine {
                 println!("Binary arithmetic instruction");
                 self.binary_arithmetic(instruction)?;
             },
-            3 => println!("Unary arithmetic instruction"),
+            3 => { 
+                println!("Unary arithmetic instruction");
+                self.unary_arithmetic(instruction)?;
+            },
             4 => println!("String print instruction"),
             5 => println!("Call instruction"),
             6 => println!("Return instruction"),
@@ -374,5 +377,32 @@ impl VirtualMachine {
         self.push_int_onto_stack(result)?;
 
         Ok(result)
+    }
+
+    fn unary_arithmetic(&mut self, instruction: u32) -> Result<(), String> {
+        let operand = self.pop_int_from_stack()? as i32;
+        let which_seperated = instruction & (0xf << 24);
+        let which_operation = which_seperated >> 24;
+        let result: i32;
+
+        print!("DEBUG -- wo:{} op:{} -- ", which_operation, operand);
+
+        match which_operation {
+            0 => {
+                println!("neg");
+                result = -operand;
+            },
+            1 => { 
+                println!("not");
+                result = !operand;
+            },
+            _ => {
+                return Err(String::from("Unary arithmetic instruction contained bad identifier."));
+            }
+        }
+
+        self.push_int_onto_stack(result)?;
+
+        Ok(())
     }
 }
