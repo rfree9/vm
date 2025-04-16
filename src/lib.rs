@@ -1,4 +1,6 @@
 use std::fs;
+use std::io::stdin;
+use std::str::FromStr;
 
 pub struct VirtualMachine {
     stack: Vec<u8>,
@@ -138,7 +140,10 @@ impl VirtualMachine {
                     },
                     0x1 => println!("Swap Instruction"),
                     0x2 => println!("Nop Instruction"),
-                    0x4 => println!("Input Instruction"),
+                    0x4 => {
+                        println!("Input Instruction");
+                        self.input(instruction)?
+                    },
                     0x5 => println!("stinput Instruction"),
                     0xF => println!("Debug Instruction"),
                     _ => return Err(String::from("Bad instruction.")),
@@ -241,6 +246,27 @@ impl VirtualMachine {
         self.should_exit = true;
         println!("DEBUG: exit code: {code}");
         
+        Ok(())
+    }
+
+    fn input(&mut self, _instruction: u32) -> Result<(), String>{
+        let mut ipt = String::new();
+        let _ = stdin().read_line(&mut ipt);
+        let trimmed = ipt.trim();
+        let n: i32;
+        
+        if trimmed.contains("0x") || trimmed.contains("0X") {
+            n = i32::from_str_radix(&trimmed[2..], 16).expect("Bad Hex Input");
+        }
+        else if trimmed.contains("0b") || trimmed.contains("0B") {
+            n = i32::from_str_radix(&trimmed[2..], 2).expect("Bad Binary Input");
+        }
+        else {
+            n = i32::from_str(&trimmed).expect("Bad input.");
+        }
+
+        self.push_int_onto_stack(n)?;
+
         Ok(())
     }
    
