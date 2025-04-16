@@ -173,7 +173,10 @@ impl VirtualMachine {
                 self.call(instruction)?;
             },
             6 => println!("Return instruction"),
-            7 => println!("Unconditional goto instruction"),
+            7 => {
+                println!("Unconditional goto instruction");
+                self.goto(instruction)?;
+            },
             8 => println!("Binary if instruction"),
             9 => println!("Unary if instruction"),
             12 => println!("Dup instruction"),
@@ -513,6 +516,29 @@ impl VirtualMachine {
             offset
         );
 
-        Ok(())    
+        Ok(()) 
+    }
+       
+    fn goto(&mut self, instruction: u32) -> Result<(), String>{
+        //TODO: make sure offset is signed
+        let extracted = (instruction >> 2) & 0x03FF_FFFF; // 26 bits
+        let mut offset: i32 = 0;
+        // Check if the sign bit (bit 25 after shift) is set
+        if extracted & (1 << 25) != 0 {
+            // Sign-extend: set upper bits to 1
+            offset = (extracted | !0x03FF_FFFF) as i32;
+        } else {
+            offset = extracted as i32;
+        }
+        println!("Goto offset: {}", offset);
+
+        //TODO: fix offset calc
+        /* 
+        offset += self.program_counter;
+
+        self.program_counter = offset;*/
+    
+
+        Ok(())
     }
 }
