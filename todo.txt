@@ -3,7 +3,7 @@
      Miscellaneous Instructions (opcode=0)
  [X]     Exit Instruction
  [ ]     Swap Instruction
- [X]     No Operation Instruction
+ [X]     No Operation Instruction -- believe the implementation handles this but could be wrong
  [X]     Input Instruction
  [ ]     String Input Instruction
  [ ]     Debug Instruction
