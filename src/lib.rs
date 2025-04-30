@@ -137,7 +137,10 @@ impl VirtualMachine {
                         println!("Exit Instruction");
                         self.exit(instruction)?
                     },
-                    0x1 => println!("Swap Instruction"),
+                    0x1 => {
+                        println!("Swap Instruction");
+                        self.swap(instruction)?
+                    },
                     0x2 => println!("Nop Instruction"),
                     0x4 => {
                         println!("Input Instruction");
@@ -148,9 +151,20 @@ impl VirtualMachine {
                         self.stinput(instruction)?;
                     },
                     0xF => {
-                        println!("Debug Instruction");
-                        self.print_stack();
-                        self.print_vm_info();
+                        // println!("Debug Instruction");
+                        // self.print_stack();
+                        // self.print_vm_info();
+                        println!("Debug Instruction (top of stack):");
+                        // Print the next four 4-byte words from SP
+                        for i in 0..4 {
+                            let offset = (i * 4) as i32;
+                            match self.peak_int_from_stack(offset) {
+                                Ok(val) => println!(" SP+{}: {:#010x}", offset, val),
+                                Err(e)  => println!(" SP+{}: <error: {}>", offset, e),
+                            }
+                        }
+                        println!(" - stack pointer:   {}", self.stack_pointer);
+                        println!(" - program counter: {}", self.program_counter);
                     }
                     _ => return Err(String::from("Bad instruction.")),
                 }
@@ -284,6 +298,38 @@ impl VirtualMachine {
         self.should_exit = true;
         println!("DEBUG: exit code: {code}");
         
+        Ok(())
+    }
+
+    fn swap(&mut self, instruction: u32) -> Result<(), String> {
+        // from and to are bits 23-12 and 11-0)
+        let raw_from = ((instruction >> 12) & 0xFFF) as i32;
+        let raw_to   = (instruction & 0xFFF) as i32;
+
+        // Sign-extend 12-bit values to 32-bit
+        let signed_from = (raw_from << 20) >> 20;
+        let signed_to   = (raw_to << 20) >> 20;
+
+        // Scale by 4 (shift left two bits)
+        let offset_from = signed_from << 2;
+        let offset_to   = signed_to << 2;
+
+        // The rest of the swap logic goes here (unchanged)
+        // Example:
+        let addr_from = self.stack_pointer + offset_from;
+        let addr_to = self.stack_pointer + offset_to;
+        // Bounds check
+        if addr_from < 0 || addr_from + 4 > 4096 || addr_to < 0 || addr_to + 4 > 4096 {
+            return Err(String::from("swap: address out of bounds"));
+        }
+        for i in 0..4 {
+            self.stack.swap((addr_from + i) as usize, (addr_to + i) as usize);
+        }
+
+        // println!("----------- SWAP DEBUG -----------");
+        // self.print_vm_info();
+        // self.print_stack();
+                
         Ok(())
     }
 
