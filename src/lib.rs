@@ -151,20 +151,24 @@ impl VirtualMachine {
                         self.stinput(instruction)?;
                     },
                     0xF => {
-                        // println!("Debug Instruction");
-                        // self.print_stack();
-                        // self.print_vm_info();
-                        println!("Debug Instruction (top of stack):");
+                        println!("Debug Instruction");
+                        self.print_stack();
+                        self.print_vm_info();
+
+                        // ---------------------------------------------
+                        // I used this for debugging swap might be usefull for something else later:
+                        
+                        // println!("Debug Instruction (top of stack):");
                         // Print the next four 4-byte words from SP
-                        for i in 0..4 {
-                            let offset = (i * 4) as i32;
-                            match self.peak_int_from_stack(offset) {
-                                Ok(val) => println!(" SP+{}: {:#010x}", offset, val),
-                                Err(e)  => println!(" SP+{}: <error: {}>", offset, e),
-                            }
-                        }
-                        println!(" - stack pointer:   {}", self.stack_pointer);
-                        println!(" - program counter: {}", self.program_counter);
+                        // for i in 0..4 {
+                        //     let offset = (i * 4) as i32;
+                        //     match self.peak_int_from_stack(offset) {
+                        //         Ok(val) => println!(" SP+{}: {:#010x}", offset, val),
+                        //         Err(e)  => println!(" SP+{}: <error: {}>", offset, e),
+                        //     }
+                        // }
+                        // println!(" - stack pointer:   {}", self.stack_pointer);
+                        // println!(" - program counter: {}", self.program_counter);
                     }
                     _ => return Err(String::from("Bad instruction.")),
                 }
