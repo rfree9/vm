@@ -545,12 +545,14 @@ impl VirtualMachine {
         println!("Goto offset: {}", offset);
 
         //TODO: fix offset calc
-        /* 
-        offset += self.program_counter;
-
+        /* offset += self.program_counter;
         self.program_counter = offset;*/
-    
 
+        /*TO TEST PLEASE*/
+        self.program_counter += offset << 2;
+        // shift left 2 to convert to bytes
+        self.program_counter -= 4;
+        //bc run() increments pc by 4
         Ok(())
     }
 }
