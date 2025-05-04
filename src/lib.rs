@@ -625,4 +625,10 @@ impl VirtualMachine {
 
         Ok(())
     }
+
+    fn binary_if(&mut self, instruction: u32) -> Result<(), String>{
+        
+
+        Ok(())
+    }
 }
