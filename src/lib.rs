@@ -202,7 +202,10 @@ impl VirtualMachine {
                 println!("Print instruction");
                 self.print(instruction);
             },
-            14 => println!("Dump instruction"),
+            14 => {
+                println!("Dump instruction");
+                self.dump()?;
+            },
             15 => {
                 println!("Push instruction");
                 self.push(instruction)?;
@@ -629,6 +632,28 @@ impl VirtualMachine {
     fn binary_if(&mut self, instruction: u32) -> Result<(), String>{
         
 
+        Ok(())
+    }
+
+    fn dump(&self) -> Result<(), String>{
+        let start = self.stack_pointer as usize;
+        //if stack empty gtfo
+        if start == 4096 {
+            return Ok(());
+        }
+        //read through stack 4 bytes at a time
+        let mut offset = 0;
+        for i in (start..4096).step_by(4) {
+            if i + 4 > self.stack.len() {
+                break;
+            }
+            //start converting bytes from i
+            let word_bytes = &self.stack[i..i+4];
+            let word = u32::from_be_bytes(word_bytes.try_into().unwrap());
+            println!("{:04x}: {:08x}", offset, word);
+            //index of word not byte so 0000, 0001, 0002... not 0000, 0004, 0008
+            offset += 1;
+        }
         Ok(())
     }
 }
