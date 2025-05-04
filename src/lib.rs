@@ -198,7 +198,10 @@ impl VirtualMachine {
             8 => println!("Binary if instruction"),
             9 => println!("Unary if instruction"),
             12 => println!("Dup instruction"),
-            13 => println!("Print instruction"),
+            13 => {
+                println!("Print instruction");
+                self.print(instruction);
+            },
             14 => println!("Dump instruction"),
             15 => {
                 println!("Push instruction");
@@ -603,6 +606,23 @@ impl VirtualMachine {
         // shift left 2 to convert to bytes
         self.program_counter -= 4;
         //bc run() increments pc by 4
+        Ok(())
+    }
+
+    fn print(&mut self, instruction: u32) -> Result<(), String>{
+        let offset: i32 = (instruction as i32 >> 2) & 0x1FFFFFF;
+        let fmt: i8 = instruction as i8 & 3;
+        let val: u32 = self.peak_int_from_stack(offset).unwrap();
+
+        match fmt {
+            0 => println!("{}", val),
+            1 => println!("{:x}", val),
+            2 => println!("{:b}", val),
+            3 => println!("{:o}", val),
+            _ => println!("error")
+        };
+        self.program_counter += 4;
+
         Ok(())
     }
 }
