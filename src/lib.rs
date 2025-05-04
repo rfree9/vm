@@ -152,7 +152,7 @@ impl VirtualMachine {
                     },
                     0xF => {
                         println!("Debug Instruction");
-                        self.print_stack();
+                        // self.print_stack();
                         self.print_vm_info();
 
                         // ---------------------------------------------
@@ -190,7 +190,10 @@ impl VirtualMachine {
                 println!("Call instruction");
                 self.call(instruction)?;
             },
-            6 => println!("Return instruction"),
+            6 => {
+                println!("Return instruction");
+                self.ret(instruction)?;
+            },
             7 => {
                 println!("Unconditional goto instruction");
                 self.goto(instruction)?;
@@ -581,6 +584,30 @@ impl VirtualMachine {
         Ok(()) 
     }
        
+    fn ret(&mut self, instruction: u32) -> Result<(), String> {
+        // Extract stack offset from bits 27:2 (always a multiple of 4)
+        let offset_raw = instruction & 0x0FFF_FFFC;
+        let offset = offset_raw as i32;
+
+        // Then pop the return address
+        let return_address = self.pop_int_from_stack()? as i32;
+
+        // Free the stack frame first
+        self.stack_pointer += offset;
+
+        // Adjust program counter
+        self.program_counter = return_address - 4;
+
+        // println!(
+        //     "DEBUG: ret – return_address={}, freed_offset={}, new_sp={}",
+        //     return_address,
+        //     offset,
+        //     self.stack_pointer
+        // );
+
+        Ok(())
+    }
+
     fn goto(&mut self, instruction: u32) -> Result<(), String>{
         //TODO: make sure offset is signed
         let extracted = (instruction >> 2) & 0x03FF_FFFF; // 26 bits
