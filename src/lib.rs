@@ -152,7 +152,7 @@ impl VirtualMachine {
                     },
                     0xF => {
                         println!("Debug Instruction");
-                        // self.print_stack();
+                        self.print_stack();
                         self.print_vm_info();
 
                         // ---------------------------------------------
