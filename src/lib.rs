@@ -629,11 +629,11 @@ impl VirtualMachine {
         Ok(())
     }
 
-    fn binary_if(&mut self, instruction: u32) -> Result<(), String>{
+    // fn binary_if(&mut self, instruction: u32) -> Result<(), String>{
         
 
-        Ok(())
-    }
+    //     Ok(())
+    // }
 
     fn dump(&self) -> Result<(), String>{
         let start = self.stack_pointer as usize;
@@ -642,7 +642,7 @@ impl VirtualMachine {
             return Ok(());
         }
         //read through stack 4 bytes at a time
-        let mut offset = 0;
+        // let mut offset = 0;
         for i in (start..4096).step_by(4) {
             if i + 4 > self.stack.len() {
                 break;
@@ -650,9 +650,8 @@ impl VirtualMachine {
             //start converting bytes from i
             let word_bytes = &self.stack[i..i+4];
             let word = u32::from_be_bytes(word_bytes.try_into().unwrap());
-            println!("{:04x}: {:08x}", offset, word);
-            //index of word not byte so 0000, 0001, 0002... not 0000, 0004, 0008
-            offset += 1;
+            println!("{:04x}: {:08x}", i, word);
+            // offset += 1;
         }
         Ok(())
     }
