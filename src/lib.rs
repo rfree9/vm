@@ -198,12 +198,15 @@ impl VirtualMachine {
                 println!("Unconditional goto instruction");
                 self.goto(instruction)?;
             },
-            8 => println!("Binary if instruction"),
+            8 => {
+                println!("Binary if instruction");
+                self.binary_if(instruction)?;
+            },
             9 => println!("Unary if instruction"),
             12 => println!("Dup instruction"),
             13 => {
                 println!("Print instruction");
-                self.print(instruction);
+                self.print(instruction)?;
             },
             14 => {
                 println!("Dump instruction");
@@ -656,11 +659,55 @@ impl VirtualMachine {
         Ok(())
     }
 
-    // fn binary_if(&mut self, instruction: u32) -> Result<(), String>{
-        
+    fn binary_if(&mut self, instruction: u32) -> Result<(), String>{
+        let offset: i32 = (instruction as i32 >> 2) & 0x3FFFFF;
+        let cond: u32 = (instruction >> 25) & 0x7;
+        let lhs = self.peak_int_from_stack(4).unwrap_or(0);
+        let rhs = self.peak_int_from_stack(0).unwrap_or(0);
+        //println!("cond = {}", cond);
 
-    //     Ok(())
-    // }
+        match cond{
+            0 => {
+                if lhs == rhs{
+                    self.program_counter += offset << 2;
+                }
+            },
+            1 => {
+                if lhs != rhs{
+                    self.program_counter += offset << 2;
+                }
+            },
+            2 => {
+                if lhs < rhs{
+                    self.program_counter += offset << 2;
+                }
+            },
+            3 => {
+                if lhs > rhs {
+                    self.program_counter += offset << 2;
+                }
+            },
+            4 => {
+                if lhs <= rhs{
+                    self.program_counter += offset << 2;
+                }
+            },
+            5 => {
+                if lhs >= rhs{
+                    self.program_counter += offset << 2;
+                }
+            },
+            _ => println!("error")
+        };
+
+        Ok(())
+    }
+
+    fn unary_if(&mut self, instruction: u32) -> Result<(), String>{
+        let offset: i32 = (instruction as i32 >> 25) & 0x3FFFFF;
+
+         Ok(())
+    }
 
     fn dump(&self) -> Result<(), String>{
         let start = self.stack_pointer as usize;
@@ -683,3 +730,4 @@ impl VirtualMachine {
         Ok(())
     }
 }
+

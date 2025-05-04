@@ -18,17 +18,17 @@
      Call Instructions (opcode=5)
  [ ]     Call Instruction
      Return Instructions (opcode=6)
- [ ]     Return Instruction
+ [x]     Return Instruction
      Unconditional Goto Instructions (opcode=7)
  [ ]     Goto Instruction
      Binary If Instructions (opcode=8)
- [ ]     Binary If Instructions
+ [x]     Binary If Instructions
      Unary If Instructions (opcode=9)
  [ ]     Unary If Instructions
      Dup Instructions (opcode=12)
  [ ]     Dup Instruction
      Print Instructions (opcode=13)
- [ ]     Print Instruction
+ [x]     Print Instruction
      Dump Instructions (opcode=14)
  [ ]     Dump Instruction
      Push Instructions (opcode=15)
