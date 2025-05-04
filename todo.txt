@@ -6,7 +6,7 @@
  [X]     No Operation Instruction -- believe the implementation handles this but could be wrong
  [X]     Input Instruction
  [ ]     String Input Instruction
- [ ]     Debug Instruction
+ [x]     Debug Instruction
      Pop Instructions (opcode=1)
  [x]     Pop Instruction
      Binary Arithmetic Instructions (opcode=2)
