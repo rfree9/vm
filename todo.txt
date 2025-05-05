@@ -16,11 +16,11 @@
      String Print Instructions (opcode=4)
  [x]     String Print Instruction
      Call Instructions (opcode=5)
- [~]     Call Instruction
+ [x]     Call Instruction
      Return Instructions (opcode=6)
  [x]     Return Instruction
      Unconditional Goto Instructions (opcode=7)
- [~]     Goto Instruction
+ [x]     Goto Instruction
      Binary If Instructions (opcode=8)
  [x]     Binary If Instructions
      Unary If Instructions (opcode=9)
@@ -30,8 +30,8 @@
      Print Instructions (opcode=13)
  [x]     Print Instruction
      Dump Instructions (opcode=14)
- [~]     Dump Instruction
+ [x]     Dump Instruction
      Push Instructions (opcode=15)
  [x]     Push Instruction
- [ ]     String Push Instruction
+ [-]     String Push Instruction
 
