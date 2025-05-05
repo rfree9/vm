@@ -163,7 +163,7 @@ impl VirtualMachine {
                         // Print the next four 4-byte words from SP
                         // for i in 0..4 {
                         //     let offset = (i * 4) as i32;
-                        //     match self.peak_int_from_stack(offset) {
+                        //     match self.peek_int_from_stack(offset) {
                         //         Ok(val) => println!(" SP+{}: {:#010x}", offset, val),
                         //         Err(e)  => println!(" SP+{}: <error: {}>", offset, e),
                         //     }
@@ -206,7 +206,10 @@ impl VirtualMachine {
                 println!("Binary if instruction");
                 self.binary_if(instruction)?;
             },
-            9 => println!("Unary if instruction"),
+            9 => {
+                println!("Unary if instruction");
+                self.unary_if(instruction)?;
+            },
             12 => println!("Dup instruction"),
             13 => {
                 println!("Print instruction");
@@ -285,28 +288,28 @@ impl VirtualMachine {
     }
 
     /* Read an int from the stack. */
-    fn peak_int_from_stack(&self, stack_offset: i32) -> Result<u32, String> {
+    fn peek_int_from_stack(&self, stack_offset: i32) -> Result<u32, String> {
         let start = (self.stack_pointer + stack_offset) as usize;
         let end = start + 4; 
 
         if end > 4096 {
-            return Err(String::from("Failed to peak: stack is empty"));
+            return Err(String::from("Failed to peek: stack is empty"));
         }
         if start > 4096 {
-            return Err(String::from("Failed to peak: offset out of range"));
+            return Err(String::from("Failed to peek: offset out of range"));
         }
 
-        let mut peaked = 0u32;
+        let mut peeked = 0u32;
 
         for i in start..end {
             let offset = i - start; 
             let byte = (self.stack[i] as u32) << ((3 - offset) * 8);
-            peaked |= byte;
+            peeked |= byte;
         }
 
-        println!("DEBUG: peak says {}", peaked);
+        println!("DEBUG: peek says {}", peeked);
 
-        Ok(peaked)
+        Ok(peeked)
     }
 
     /* INSTRUCTIONS */
@@ -628,7 +631,7 @@ impl VirtualMachine {
         // Check if the sign bit (bit 25 after shift) is set
         if extracted & (1 << 25) != 0 {
             // Sign-extend: set upper bits to 1
-            offset = (ex(tracted | !0x03FF_FFFF) as i32;
+            offset = (extracted | !0x03FF_FFFF) as i32;
         } else {
             offset = extracted as i32;
         }
@@ -649,7 +652,7 @@ impl VirtualMachine {
     fn print(&mut self, instruction: u32) -> Result<(), String>{
         let offset: i32 = (instruction as i32 >> 2) & 0x1FFFFFF;
         let fmt: i8 = instruction as i8 & 3;
-        let val: u32 = self.peak_int_from_stack(offset)?;
+        let val: u32 = self.peek_int_from_stack(offset)?;
 
         match fmt {
             0 => println!("{}", val),
@@ -666,8 +669,8 @@ impl VirtualMachine {
     fn binary_if(&mut self, instruction: u32) -> Result<(), String>{
         let offset: i32 = (instruction as i32 >> 2) & 0x3FFFFF;
         let cond: u32 = (instruction >> 25) & 0x7;
-        let lhs = self.peak_int_from_stack(4).unwrap_or(0);
-        let rhs = self.peak_int_from_stack(0).unwrap_or(0);
+        let lhs = self.peek_int_from_stack(4).unwrap_or(0);
+        let rhs = self.peek_int_from_stack(0).unwrap_or(0);
         //println!("cond = {}", cond);
 
         match cond{
@@ -710,9 +713,46 @@ impl VirtualMachine {
     }
 
     fn unary_if(&mut self, instruction: u32) -> Result<(), String>{
-        let offset: i32 = (instruction as i32 >> 25) & 0x3FFFFF;
+        let offset_mask = (1 << 25) - 1;
+        let condition_mask = (1 << 2) - 1;
 
-         Ok(())
+        let mut offset = (instruction as i32) & offset_mask;
+        if instruction & (1 << 24) != 0 {
+            offset |= !offset_mask;
+        }
+        let condition = (instruction >> 25) & condition_mask;
+        let peek = self.peek_int_from_stack(0)? as i32;
+        let result: bool;
+
+        match condition {
+            0 => {
+                println!("DEBUG: ez");
+                result = peek == 0;
+            },
+            1 => {
+                println!("DEBUG: nz");
+                result = peek != 0;
+            },
+            2 => {
+                println!("DEBUG: mi");
+                result = peek < 0;
+            },
+            3 => {
+                println!("DEBUG: pl");
+                result = peek > 0;
+            },
+            _ => {
+                return Err(String::from("Unary if: faulty instruction."));
+            },
+        }
+
+        if result {
+            self.program_counter += offset;
+            /* Band-aid fix. :) */
+            self.program_counter -= 4;
+        }
+
+        Ok(())
     }
 
     fn dump(&self) -> Result<(), String>{
