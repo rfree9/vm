@@ -24,7 +24,7 @@
      Binary If Instructions (opcode=8)
  [x]     Binary If Instructions
      Unary If Instructions (opcode=9)
- [ ]     Unary If Instructions
+ [x]     Unary If Instructions
      Dup Instructions (opcode=12)
  [ ]     Dup Instruction
      Print Instructions (opcode=13)
