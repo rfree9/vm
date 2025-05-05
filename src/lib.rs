@@ -656,12 +656,13 @@ impl VirtualMachine {
 
         match fmt {
             0 => println!("{}", val),
-            1 => println!("{:x}", val),
-            2 => println!("{:b}", val),
-            3 => println!("{:o}", val),
-            _ => println!("error")
+            1 => println!("0x{:x}", val),
+            2 => println!("0b{:b}", val),
+            3 => println!("0o{:o}", val),
+            _ => {
+                return Err(String::from("print: faulty format code."));
+            }
         };
-        self.program_counter += 4;
 
         Ok(())
     }
