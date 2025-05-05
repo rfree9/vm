@@ -210,7 +210,10 @@ impl VirtualMachine {
                 println!("Unary if instruction");
                 self.unary_if(instruction)?;
             },
-            12 => println!("Dup instruction"),
+            12 => {
+                println!("Dup instruction");
+                self.dup(instruction)?;
+            },
             13 => {
                 println!("Print instruction");
                 self.print(instruction)?;
@@ -829,5 +832,22 @@ impl VirtualMachine {
 
         Ok(())
     }
-}
 
+    fn dup(&mut self, instruction: u32) -> Result<(), String> {
+        let offset_mask = (1 << 28) - 1;
+
+        /* Marz's handles negative offsets. Sounds horrible to me, but who cares anymore. It's
+         * 1:39am on a Monday morning and I just wanna go to bed! */
+        let mut offset = instruction as i32 & offset_mask;
+        if instruction & (1 << 27) != 0 {
+            offset |= !offset_mask;
+        }
+
+        println!("o: {} {:x}", offset, offset);
+
+        let peek = self.peek_int_from_stack(offset)? as i32;
+        self.push_int_onto_stack(peek)?;
+
+        Ok(())
+    }
+}

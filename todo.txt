@@ -26,7 +26,7 @@
      Unary If Instructions (opcode=9)
  [x]     Unary If Instructions
      Dup Instructions (opcode=12)
- [ ]     Dup Instruction
+ [x]     Dup Instruction
      Print Instructions (opcode=13)
  [x]     Print Instruction
      Dump Instructions (opcode=14)
