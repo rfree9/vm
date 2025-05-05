@@ -608,7 +608,7 @@ impl VirtualMachine {
         let fmt: i8 = instruction as i8 & 3;
         let val = self.peek_int_from_stack(offset)? as i32;
 
-        println!("o:{} om:{:x} i:{:x}", offset, offset_mask, instruction);
+        // println!("o:{} om:{:x} i:{:x}", offset, offset_mask, instruction);
 
         match fmt {
             0 => println!("{}", val),
