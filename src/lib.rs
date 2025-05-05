@@ -127,32 +127,25 @@ impl VirtualMachine {
     fn execute_instruction(&mut self, instruction: u32) -> Result<(), String> {
         let opcode = VirtualMachine::get_op_code(instruction);
         
-        print!("opcode: {:x} -- ", VirtualMachine::get_op_code(instruction));
         match opcode {
             0 => {
-                println!("Misc. instruction");
                 let misc_instruction = instruction >> 24;
 
                 match misc_instruction {
                     0 => {
-                        println!("Exit Instruction");
                         self.exit(instruction)?
                     },
                     0x1 => {
-                        println!("Swap Instruction");
                         self.swap(instruction)?
                     },
-                    0x2 => println!("Nop Instruction"),
+                    0x2 => (),
                     0x4 => {
-                        println!("Input Instruction");
                         self.input()?
                     },
                     0x5 => {
-                        println!("stinput Instruction");
                         self.stinput(instruction)?;
                     },
                     0xF => {
-                        println!("Debug Instruction");
                         self.print_stack();
                         self.print_vm_info();
 
@@ -175,55 +168,42 @@ impl VirtualMachine {
                 }
             },
             1 => {
-                println!("Pop instruction");
                 self.pop(instruction)?;
             },
             2 => {
-                println!("Binary arithmetic instruction");
                 self.binary_arithmetic(instruction)?;
             },
             3 => { 
-                println!("Unary arithmetic instruction");
                 self.unary_arithmetic(instruction)?;
             },
             4 => {
-                println!("String print instruction");
                 self.stprint(instruction)?;
             },
             5 => {
-                println!("Call instruction");
                 self.call(instruction)?;
             },
             6 => {
-                println!("Return instruction");
                 self.ret(instruction)?;
             },
             7 => {
-                println!("Unconditional goto instruction");
                 self.goto(instruction)?;
             },
             8 => {
-                println!("Binary if instruction");
                 self.binary_if(instruction)?;
             },
             9 => {
-                println!("Unary if instruction");
                 self.unary_if(instruction)?;
             },
             12 => {
-                println!("Dup instruction");
                 self.dup(instruction)?;
             },
             13 => {
-                println!("Print instruction");
                 self.print(instruction)?;
             },
             14 => {
-                println!("Dump instruction");
                 self.dump()?;
             },
             15 => {
-                println!("Push instruction");
                 self.push(instruction)?;
             },
             _ => return Err(String::from("Bad instruction.")),
@@ -269,8 +249,6 @@ impl VirtualMachine {
             return Err(String::from("Out of memory."));
         }
 
-        println!("DEBUG: {}", n);
-
         let bytes = n.to_be_bytes();
         let start = new_stack_pointer as usize;
         let end = start + 4;
@@ -310,8 +288,6 @@ impl VirtualMachine {
             peeked |= byte;
         }
 
-        println!("DEBUG: peek says {}", peeked);
-
         Ok(peeked)
     }
 
@@ -322,7 +298,6 @@ impl VirtualMachine {
         let code = instruction as i32;
         self.exit_code = code;
         self.should_exit = true;
-        println!("DEBUG: exit code: {code}");
         
         Ok(())
     }
@@ -425,8 +400,6 @@ impl VirtualMachine {
         let offset = instruction & 0x0fffffff;
         let new_stack_pointer = self.stack_pointer + offset as i32;
 
-        println!("DEBUG: sp: {} o:{} nsp:{}", self.stack_pointer, offset, new_stack_pointer);
-
         if offset % 4 != 0 {
             /* This shouldn't happen, but just in case. */
             return Err(String::from("pop: Offset should be a multiple of four."));
@@ -480,57 +453,42 @@ impl VirtualMachine {
             return Err(String::from("Attempt to shift by a negative number."));
         }
 
-        print!("{:x} - ", which_operation);
-
-        print!("l:{} r:{} - ", left, right);
-
         /* Perform calculation. */
         match which_operation {
             0 => {
-                println!("add");
                 result = left + right;
             },
             1 => {
-                println!("sub");
                 result = left - right;
             },
             2 => {
-                println!("mul");
                 result = left * right;
             },
             3 => {
-                println!("div");
                 result = left / right;
             },
             4 => {
-                println!("rem");
                 result = left % right;
             },
             5 => {
-                println!("and");
                 result = left & right;
             }, 
             6 => {
-                println!("or");
                 result = left | right;
             },
             7 => {
-                println!("xor");
                 result = left ^ right;
             },
             8 => {
-                println!("lsl");
                 result = left << right;
             },
             9 => {
-                println!("lsr");
                 let unsigned_left = left as u32;
                 let unsigned_right = right as u32;
                 let lsr = unsigned_left >> unsigned_right;
                 result = lsr as i32; 
             },
             11 => {
-                println!("asr");
                 result = left >> right;
             }, 
             _ => {
@@ -538,7 +496,6 @@ impl VirtualMachine {
             },
         }
 
-        println!("Result: {}", result);
         self.push_int_onto_stack(result)?;
 
         Ok(result)
@@ -550,15 +507,11 @@ impl VirtualMachine {
         let which_operation = which_seperated >> 24;
         let result: i32;
 
-        print!("DEBUG -- wo:{} op:{} -- ", which_operation, operand);
-
         match which_operation {
             0 => {
-                println!("neg");
                 result = -operand;
             },
             1 => { 
-                println!("not");
                 result = !operand;
             },
             _ => {
@@ -592,13 +545,6 @@ impl VirtualMachine {
 
         //prev double increment 
         self.program_counter -= 4;
-
-        println!(
-            "DEBUG: call - return_address={}, new_pc={}, raw_offset={:#x}",
-            red_addy,
-            self.program_counter + 4,
-            offset
-        );
 
         Ok(()) 
     }
@@ -638,7 +584,6 @@ impl VirtualMachine {
         } else {
             offset = extracted as i32;
         }
-        println!("Goto offset: {}", offset);
 
         //TODO: fix offset calc
         /* offset += self.program_counter;
@@ -730,19 +675,15 @@ impl VirtualMachine {
 
         match condition {
             0 => {
-                println!("DEBUG: ez");
                 result = peek == 0;
             },
             1 => {
-                println!("DEBUG: nz");
                 result = peek != 0;
             },
             2 => {
-                println!("DEBUG: mi");
                 result = peek < 0;
             },
             3 => {
-                println!("DEBUG: pl");
                 result = peek > 0;
             },
             _ => {
@@ -842,8 +783,6 @@ impl VirtualMachine {
         if instruction & (1 << 27) != 0 {
             offset |= !offset_mask;
         }
-
-        println!("o: {} {:x}", offset, offset);
 
         let peek = self.peek_int_from_stack(offset)? as i32;
         self.push_int_onto_stack(peek)?;
