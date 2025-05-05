@@ -649,7 +649,7 @@ impl VirtualMachine {
     fn print(&mut self, instruction: u32) -> Result<(), String>{
         let offset: i32 = (instruction as i32 >> 2) & 0x1FFFFFF;
         let fmt: i8 = instruction as i8 & 3;
-        let val: u32 = self.peak_int_from_stack(offset).unwrap();
+        let val: u32 = self.peak_int_from_stack(offset)?;
 
         match fmt {
             0 => println!("{}", val),
