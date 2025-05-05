@@ -630,10 +630,9 @@ impl VirtualMachine {
         let lhs = self.peek_int_from_stack(4).unwrap_or(0);
         let rhs = self.peek_int_from_stack(0).unwrap_or(0);*/
         //println!("cond = {}", cond);
-        let offset_mask = (1 << 26) - 1;
-        let mut offset: i32 = (instruction as i32 >> 2) & offset_mask;
-        offset <<= 2;
-        if instruction & (1 << 25) != 0 {
+        let offset_mask = (1 << 25) - 1;
+        let mut offset: i32 = instruction as i32 & offset_mask;
+        if instruction & (1 << 24) != 0 {
             offset |= !offset_mask;
         }
 
@@ -645,32 +644,32 @@ impl VirtualMachine {
         match cond{
             0 => {
                 if lhs == rhs{
-                    self.program_counter += offset << 2;
+                    self.program_counter += offset;
                 }
             },
             1 => {
                 if lhs != rhs{
-                    self.program_counter += offset << 2;
+                    self.program_counter += offset;
                 }
             },
             2 => {
                 if lhs < rhs{
-                    self.program_counter += offset << 2;
+                    self.program_counter += offset;
                 }
             },
             3 => {
                 if lhs > rhs {
-                    self.program_counter += offset << 2;
+                    self.program_counter += offset;
                 }
             },
             4 => {
                 if lhs <= rhs{
-                    self.program_counter += offset << 2;
+                    self.program_counter += offset;
                 }
             },
             5 => {
                 if lhs >= rhs{
-                    self.program_counter += offset << 2;
+                    self.program_counter += offset;
                 }
             },
             _ => {
