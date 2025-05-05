@@ -1,5 +1,5 @@
 use std::fs;
-use std::io::stdin;
+use std::io::{stdin, stdout, Write};
 use std::str::FromStr;
 use std::collections::VecDeque;
 
@@ -770,6 +770,8 @@ impl VirtualMachine {
                 print!("{}", c);
             }
         }
+
+        stdout().flush().expect("Failed to flush buffer");
 
         Ok(())
     }
