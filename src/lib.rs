@@ -628,7 +628,7 @@ impl VirtualMachine {
         // Check if the sign bit (bit 25 after shift) is set
         if extracted & (1 << 25) != 0 {
             // Sign-extend: set upper bits to 1
-            offset = (extracted | !0x03FF_FFFF) as i32;
+            offset = (ex(tracted | !0x03FF_FFFF) as i32;
         } else {
             offset = extracted as i32;
         }
@@ -701,7 +701,9 @@ impl VirtualMachine {
                     self.program_counter += offset << 2;
                 }
             },
-            _ => println!("error")
+            _ => {
+                return Err(String::from("Binary if: faulty instruction."));
+            }
         };
 
         Ok(())
