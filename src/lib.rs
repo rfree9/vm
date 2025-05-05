@@ -1,6 +1,7 @@
 use std::fs;
 use std::io::stdin;
 use std::str::FromStr;
+use std::collections::VecDeque;
 
 pub struct VirtualMachine {
     stack: Vec<u8>,
@@ -185,7 +186,10 @@ impl VirtualMachine {
                 println!("Unary arithmetic instruction");
                 self.unary_arithmetic(instruction)?;
             },
-            4 => println!("String print instruction"),
+            4 => {
+                println!("String print instruction");
+                self.stprint(instruction)?;
+            },
             5 => {
                 println!("Call instruction");
                 self.call(instruction)?;
@@ -727,6 +731,59 @@ impl VirtualMachine {
             println!("{:04x}: {:08x}", i, word);
             // offset += 1;
         }
+        Ok(())
+    }
+
+    fn stprint(&self, instruction: u32) -> Result<(), String> {
+        let mut stack_offset = (instruction as i32) & !(0xf << 28);
+        if stack_offset & (1 << 27) != 0 {
+            /* Sign extend. */
+            stack_offset |= 0xf << 28;
+        }
+    
+        let start_address = self.stack_pointer + stack_offset;
+        if start_address >= 4096 || start_address < 0 {
+            return Err(String::from("stprint: Offset out of range."));
+        }
+
+        /* The actual print loop. */
+        let start_index = start_address as usize;
+        let stack_size = self.stack.len();
+        let mut last_char_set = -1;
+        let mut d = VecDeque::new();
+        for i in start_index..stack_size {
+            let cur = self.stack[i];
+
+            /* Since strings are stored in three-byte chunklets prefaced by numbers, when we hit a
+             * null terminator, we don't die right away, instead we print the last three bytes. */
+            if cur == 0 || last_char_set != -1 {
+                last_char_set += 1;
+            }
+            if last_char_set > 3 {
+                break;
+            }
+            /* Don't add numbers to the deque. */
+            if cur == 0 || cur == 1 {
+                continue;
+            }
+
+            //print!("{}", cur as char);
+            d.push_front(cur as char);
+            if d.len() == 3 {
+                for c in &d {
+                    print!("{}", c);
+                }
+
+                d.clear();
+            }
+        }
+
+        if !d.is_empty() {
+            for c in &d {
+                print!("{}", c);
+            }
+        }
+
         Ok(())
     }
 }
