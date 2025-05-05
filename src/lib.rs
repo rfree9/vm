@@ -608,7 +608,7 @@ impl VirtualMachine {
         let fmt: i8 = instruction as i8 & 3;
         let val = self.peek_int_from_stack(offset)? as i32;
 
-        println!("o:{} om:{:x} i:{:x}", offset, offset_mask, instruction);
+        //println!("o:{} om:{:x} i:{:x}", offset, offset_mask, instruction);
 
         match fmt {
             0 => println!("{}", val),
@@ -624,11 +624,22 @@ impl VirtualMachine {
     }
 
     fn binary_if(&mut self, instruction: u32) -> Result<(), String>{
-        let offset: i32 = (instruction as i32 >> 2) & 0x3FFFFF;
+        /*let offset: i32 = (instruction as i32 >> 2) & 0x3FFFFF;
         let cond: u32 = (instruction >> 25) & 0x7;
         let lhs = self.peek_int_from_stack(4).unwrap_or(0);
-        let rhs = self.peek_int_from_stack(0).unwrap_or(0);
+        let rhs = self.peek_int_from_stack(0).unwrap_or(0);*/
         //println!("cond = {}", cond);
+        let offset_mask = (1 << 26) - 1;
+        let mut offset: i32 = (instruction as i32 >> 2) & offset_mask;
+        offset <<= 2;
+        if instruction & (1 << 25) != 0 {
+            offset |= !offset_mask;
+        }
+
+        let cond_mask = (1 << 4) - 1;
+        let cond = (instruction >> 25) & cond_mask;
+        let lhs = self.peek_int_from_stack(4).unwrap_or(0);
+        let rhs = self.peek_int_from_stack(0).unwrap_or(0);
 
         match cond{
             0 => {
