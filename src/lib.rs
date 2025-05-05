@@ -598,9 +598,17 @@ impl VirtualMachine {
     }
 
     fn print(&mut self, instruction: u32) -> Result<(), String>{
-        let offset: i32 = (instruction as i32 >> 2) & 0x1FFFFFF;
+        let offset_mask = (1 << 26) - 1;
+        let mut offset: i32 = (instruction as i32 >> 2) & offset_mask;
+        offset <<= 2;
+        if instruction & (1 << 25) != 0 {
+            offset |= !offset_mask;
+        }
+
         let fmt: i8 = instruction as i8 & 3;
-        let val: u32 = self.peek_int_from_stack(offset)?;
+        let val = self.peek_int_from_stack(offset)? as i32;
+
+        println!("o:{} om:{:x} i:{:x}", offset, offset_mask, instruction);
 
         match fmt {
             0 => println!("{}", val),
