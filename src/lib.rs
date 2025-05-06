@@ -295,7 +295,7 @@ impl VirtualMachine {
         Ok(peeked)
     }
 
-    /* Sign extend partial numbers. */
+    /* Sign extend partial numbers. 
     fn sign_extend_partial_word(word: i32, msb: i32) -> i32 {
         if msb > 31 || msb < 0 {
             panic!("sign_extend_partial_word() failed: invalid msb.");
@@ -312,7 +312,7 @@ impl VirtualMachine {
         eprintln!("DEBUG: w:{:x} msb:{} sm:{:x} sw:{:x}", word, msb, sign_mask, signed_word);
 
         signed_word
-    }
+    } */
 
     /* INSTRUCTIONS */
     /* TODO: These'll get their own file at some point. */
