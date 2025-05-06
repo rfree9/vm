@@ -291,6 +291,25 @@ impl VirtualMachine {
         Ok(peeked)
     }
 
+    /* Sign extend partial numbers. */
+    fn sign_extend_partial_word(word: i32, msb: i32) -> i32 {
+        if msb > 31 || msb < 0 {
+            panic!("sign_extend_partial_word() failed: invalid msb.");
+        }
+
+        if word & (1 << msb) == 0 {
+            return word;
+        }
+
+        let sign_mask = !((1 << (msb + 1)) - 1);
+        
+        let signed_word = word | sign_mask;
+
+        eprintln!("DEBUG: w:{:x} msb:{} sm:{:x} sw:{:x}", word, msb, sign_mask, signed_word);
+
+        signed_word
+    }
+
     /* INSTRUCTIONS */
     /* TODO: These'll get their own file at some point. */
 
@@ -555,13 +574,16 @@ impl VirtualMachine {
         let offset = offset_raw as i32;
 
         // Then pop the return address
-        let return_address = self.pop_int_from_stack()? as i32;
+        //self.print_stack();
+        //self.print_vm_info();
 
         // Free the stack frame first
         self.stack_pointer += offset;
 
+        let return_address = self.pop_int_from_stack()? as i32;
+
         // Adjust program counter
-        self.program_counter = return_address - 4;
+        self.program_counter = return_address;
 
         // println!(
         //     "DEBUG: ret – return_address={}, freed_offset={}, new_sp={}",
