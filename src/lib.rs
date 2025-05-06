@@ -391,18 +391,53 @@ impl VirtualMachine {
     }
 
     fn stinput(&mut self, instruction: u32) -> Result<(), String>{
-        let shifted = instruction & 0x00FF_FFFF;
-        println!("{}", shifted);
+        let shifted_mask = (1 << 24) - 1;
+        let shifted = instruction & shifted_mask;
 
         let mut input = String::new();
-        let _ = stdin().read_line(&mut input);
+        let response = stdin().read_line(&mut input);
+
+        match response {
+            Err(e) => return Err(format!("Couldn't read input: {}", e)),
+            _ => (),
+        }
+
         let mut trimmed = input.trim();
         
         if trimmed.len() > shifted as usize {
             trimmed = &trimmed[..shifted as usize];
         }
 
-        // TODO: pass trimmed string to stpush
+        /* Convert our string into words we can push onto the stack. */
+        let bytes: Vec<u8> = trimmed.bytes().collect();
+        let len = bytes.len();
+        let mut cur = 0i32;
+        let mut d: VecDeque<i32> = VecDeque::new();
+        let mut byte_index = 0i32;
+
+        for i in 0..len {
+             let byte = bytes[i];
+             cur |= (byte as i32) << 8 * byte_index;
+
+             byte_index += 1;
+             if byte_index == 3 {
+                 if (i + 1) < len {
+                     cur |= 1 << 24;
+                 }
+
+                 d.push_front(cur);
+                 byte_index = 0;
+                 cur = 0;
+             }
+        }
+        
+        if byte_index != 3 {
+             d.push_front(cur);
+        }
+
+        for no in d {
+            self.push_int_onto_stack(no)?;
+        }
 
         Ok(())
     }
@@ -415,7 +450,6 @@ impl VirtualMachine {
         }
 
         self.push_int_onto_stack(push_value)?;
-        println!("DEBUG: Pushing {} i:{:x}", push_value, instruction);
         
         Ok(())
     }
@@ -461,19 +495,8 @@ impl VirtualMachine {
             return Err(String::from("Attempt to divide by zero."));
         }
 
-        /* TODO: I'm conflicted with how to handle shifting by negative numbers. By default, Rust
-         * doesn't allow it, and it's considered undefined behavior in C (from what I can tell, it
-         * seems that there's no standard among processors either). The common solution in
-         * languages these days is to mod the right operand by the word size. This seems to be the
-         * solution Marz's program takes, but I don't like that solution because there really isn't
-         * any sense in shifting by a negative number anyway; hence why Rust doesn't allow it. I
-         * don't think Marz is going to test freak cases like this, so I'm going to do what I think
-         * is right and just kill the program in this case. If you think I should change my mind on
-         * this matter then I'll change the code to mirror Marz's, but for now I'm standing my
-         * ground. ~row */
-    
         /* Negative shift check. */
-        if which_operation <= 8 && right < 0 {
+        if which_operation >= 8 && right < 0 {
             return Err(String::from("Attempt to shift by a negative number."));
         }
 
@@ -668,45 +691,38 @@ impl VirtualMachine {
         let cond = (instruction >> 25) & cond_mask;
         let lhs = self.peek_int_from_stack(4).unwrap_or(0);
         let rhs = self.peek_int_from_stack(0).unwrap_or(0);
+        let result: bool;
 
         match cond{
             0 => {
-                if lhs == rhs{
-                    self.program_counter += offset;
-                }
+                result = lhs == rhs;
             },
             1 => {
-                if lhs != rhs{
-                    self.program_counter += offset;
-                }
+                result = lhs != rhs;
             },
             2 => {
-                if lhs < rhs{
-                    self.program_counter += offset;
-                }
+                result = lhs < rhs;
             },
             3 => {
-                if lhs > rhs {
-                    self.program_counter += offset;
-                }
+                result = lhs > rhs; 
             },
             4 => {
-                if lhs <= rhs{
-                    self.program_counter += offset;
-                }
+                result = lhs <= rhs;
             },
             5 => {
-                if lhs >= rhs{
-                    self.program_counter += offset;
-                }
+                result = lhs >= rhs;
             },
             _ => {
                 return Err(String::from("Binary if: faulty instruction."));
             }
         };
 
-        self.program_counter -= 4;
-
+        if result {
+            self.program_counter += offset;
+            /* Band-aid fix. :) */
+            self.program_counter -= 4;
+        }
+        
         Ok(())
     }
 
