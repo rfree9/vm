@@ -627,7 +627,7 @@ impl VirtualMachine {
     fn goto(&mut self, instruction: u32) -> Result<(), String>{
         //TODO: make sure offset is signed
         let extracted = (instruction >> 2) & 0x03FF_FFFF; // 26 bits
-        let mut offset: i32 = 0;
+        let offset: i32;
         // Check if the sign bit (bit 25 after shift) is set
         if extracted & (1 << 25) != 0 {
             // Sign-extend: set upper bits to 1
