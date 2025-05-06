@@ -705,6 +705,8 @@ impl VirtualMachine {
             }
         };
 
+        self.program_counter -= 4;
+
         Ok(())
     }
 
