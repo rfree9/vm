@@ -115,12 +115,16 @@ impl VirtualMachine {
         }
 
         print!("\n");
+        
+        stdout().flush().expect("Failed to flush buffer");
     }
 
     /* Print the SP and PC. */
     fn print_vm_info(&self) {
         println!(" - stack pointer:   {}", self.stack_pointer);
         println!(" - program counter: {}", self.program_counter);
+        
+        stdout().flush().expect("Failed to flush buffer");
     }
 
     /* Executes an instruction. */
@@ -411,6 +415,7 @@ impl VirtualMachine {
         }
 
         self.push_int_onto_stack(push_value)?;
+        println!("DEBUG: Pushing {} i:{:x}", push_value, instruction);
         
         Ok(())
     }
@@ -584,7 +589,8 @@ impl VirtualMachine {
 
         // Adjust program counter
         self.program_counter = return_address;
-
+        self.program_counter -= 4;
+        
         // println!(
         //     "DEBUG: ret – return_address={}, freed_offset={}, new_sp={}",
         //     return_address,
