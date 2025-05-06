@@ -486,7 +486,7 @@ impl VirtualMachine {
     fn binary_arithmetic(&mut self, instruction: u32) -> Result<i32, String> {
         let which_seperated = instruction & (0xf << 24);
         let which_operation = which_seperated >> 24;
-        let right = self.pop_int_from_stack()? as i32;
+        let mut right = self.pop_int_from_stack()? as i32;
         let left = self.pop_int_from_stack()? as i32;
         let result: i32;
 
@@ -497,7 +497,9 @@ impl VirtualMachine {
 
         /* Negative shift check. */
         if which_operation >= 8 && right < 0 {
-            return Err(String::from("Attempt to shift by a negative number."));
+            //return Err(String::from("Attempt to shift by a negative number."));
+            let true_right = right as u32 % 32;
+            right = true_right as i32;
         }
 
         /* Perform calculation. */
